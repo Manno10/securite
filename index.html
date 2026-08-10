@@ -448,6 +448,46 @@ body.night .st:hover{
   background:#162633;
 }
 
+
+.mode-panel{
+  padding:12px 18px;
+  border-bottom:1px solid var(--line);
+  background:var(--panel);
+}
+.mode-title{
+  font-size:9.5px;
+  font-weight:800;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  margin-bottom:8px;
+}
+.mode-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.mode-btn{
+  min-height:40px;
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.mode-btn.active{
+  background:var(--blue);
+  color:#fff;
+  border-color:var(--blue);
+}
+.mode-hint{
+  margin-top:7px;
+  font-size:9.5px;
+  line-height:1.35;
+  color:var(--muted);
+}
+body.route-mode #map{
+  cursor:crosshair;
+}
+
 </style>
 
 </head>
@@ -466,6 +506,17 @@ body.night .st:hover{
       <div class="row">
         <button class="primary" id="haitiBtn">Vue nationale</button>
         <button id="geoBtn">Ma position</button>
+      </div>
+    </div>
+
+    <div class="mode-panel">
+      <div class="mode-title">Mode d’utilisation</div>
+      <div class="mode-grid">
+        <button class="mode-btn active" id="exploreModeBtn">Explorer</button>
+        <button class="mode-btn" id="routeModeBtn">Itinéraire</button>
+      </div>
+      <div class="mode-hint" id="modeHint">
+        Mode exploration : consultez les postes, filtrez et naviguez sur la carte.
       </div>
     </div>
 
@@ -572,6 +623,31 @@ function initApp() {
   const communeSel=document.getElementById("commune");
   const q=document.getElementById("q");
   const status=document.getElementById("status");
+
+  let routeMode=false;
+
+  function setMode(mode){
+    routeMode = mode==="route";
+    document.body.classList.toggle("route-mode",routeMode);
+    document.getElementById("exploreModeBtn").classList.toggle("active",!routeMode);
+    document.getElementById("routeModeBtn").classList.toggle("active",routeMode);
+
+    document.getElementById("modeHint").textContent = routeMode
+      ? "Mode itinéraire : cliquez sur un point de la carte ou utilisez « Ma position » pour calculer le trajet vers le commissariat le plus proche."
+      : "Mode exploration : consultez les postes, filtrez et naviguez sur la carte.";
+
+    if(!routeMode){
+      clearRoute();
+      if(originMarker){ map.removeLayer(originMarker); originMarker=null; }
+      if(nearestMarker){ map.removeLayer(nearestMarker); nearestMarker=null; }
+      currentOrigin=null;
+      currentNearest=null;
+      document.getElementById("nearest").classList.remove("show");
+    }
+  }
+
+  document.getElementById("exploreModeBtn").onclick=()=>setMode("explore");
+  document.getElementById("routeModeBtn").onclick=()=>setMode("route");
 
   document.getElementById("planBtn").onclick=()=>setBase(
     document.body.classList.contains("night") ? dark : osm,
@@ -914,7 +990,10 @@ function initApp() {
     drawRoute();
   }
 
-  map.on("click",e=>setOrigin(e.latlng.lat,e.latlng.lng,"Point choisi"));
+  map.on("click",e=>{
+    if(!routeMode) return;
+    setOrigin(e.latlng.lat,e.latlng.lng,"Point choisi");
+  });
   map.on("zoomend",updateMarkerLabels);
 
   deptSel.onchange=()=>{refreshCommunes();applyFilters(true)};
@@ -933,8 +1012,29 @@ function initApp() {
 
   document.getElementById("geoBtn").onclick=()=>{
     if(!navigator.geolocation) return alert("Géolocalisation indisponible.");
+
     navigator.geolocation.getCurrentPosition(
-      p=>setOrigin(p.coords.latitude,p.coords.longitude,"Ma position"),
+      p=>{
+        const lat=p.coords.latitude;
+        const lon=p.coords.longitude;
+
+        if(routeMode){
+          setOrigin(lat,lon,"Ma position");
+        } else {
+          if(originMarker) map.removeLayer(originMarker);
+          originMarker=L.circleMarker([lat,lon],{
+            radius:8,
+            color:"#fff",
+            weight:2,
+            fillColor:"#1f7a5a",
+            fillOpacity:1
+          }).addTo(map).bindPopup("Ma position").openPopup();
+
+          map.setView([lat,lon],15);
+          status.textContent="Position actuelle affichée. Activez le mode Itinéraire pour rechercher le commissariat le plus proche.";
+          status.className="status ok";
+        }
+      },
       ()=>alert("Impossible d'obtenir la position."),
       {enableHighAccuracy:true,timeout:12000,maximumAge:0}
     );
@@ -942,6 +1042,7 @@ function initApp() {
 
   refreshCommunes();
   applyFilters(true);
+  setMode("explore");
 
   setTimeout(()=>{
     map.invalidateSize(true);
