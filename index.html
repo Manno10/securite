@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Poste le plus proche — Commissariats d'Haïti</title>
+
+
+<style>
+:root{
+  --navy:#0b1f33;
+  --navy-2:#14324d;
+  --blue:#1f5f99;
+  --blue-2:#2e78b7;
+  --blue-soft:#eaf2f8;
+  --bg:#f3f6f9;
+  --panel:#ffffff;
+  --line:#d8e0e8;
+  --text:#1e2f3f;
+  --muted:#6c7b88;
+  --success:#1f7a5a;
+  --warning:#c58a1b;
+  --danger:#b43b3b;
+  --shadow:0 8px 28px rgba(15,35,55,.10);
+  --metric-bg:#0b2b23;
+  --metric-text:#ffffff;
+}
+
+body.night{
+  --bg:#0b1218;
+  --panel:#101b25;
+  --panel2:#172735;
+  --line:#2b3e4d;
+  --text:#e7eef4;
+  --muted:#a3b2bf;
+  --blue-soft:#142434;
+  --metric-bg:#081d18;
+  --metric-text:#f4f8fb;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+body{overflow:hidden}
+.app{
+  height:100vh;
+  display:grid;
+  grid-template-columns:400px 1fr;
+}
+.side{
+  background:var(--panel);
+  border-right:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  overflow:hidden;
+  box-shadow:4px 0 20px rgba(25,50,75,.06);
+  z-index:700;
+}
+.head{
+  padding:20px 20px 18px;
+  background:linear-gradient(135deg,var(--navy),var(--navy-2));
+  color:#fff;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.head h1{
+  font-size:19px;
+  margin:0;
+  font-weight:700;
+  letter-spacing:.1px;
+}
+.head .sub{
+  margin-top:5px;
+  font-size:11px;
+  color:#dbe6ef;
+  line-height:1.45;
+}
+.head::after{
+  content:"SYSTÈME D’APPUI À LA SÉCURITÉ";
+  display:inline-block;
+  margin-top:10px;
+  padding:4px 8px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:5px;
+  font-size:8.5px;
+  letter-spacing:1.2px;
+  color:#f4f7fa;
+}
+.controls{
+  padding:15px 18px 13px;
+  display:grid;
+  gap:10px;
+  border-bottom:1px solid var(--line);
+  background:#fbfcfd;
+}
+label{
+  display:block;
+  font-size:9.5px;
+  color:var(--muted);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  margin-bottom:5px;
+}
+select,input,button{
+  width:100%;
+  min-height:40px;
+  border-radius:7px;
+  border:1px solid #cfd9e2;
+  background:#fff;
+  color:var(--text);
+  padding:0 11px;
+  font:inherit;
+  font-size:13px;
+}
+select:focus,input:focus{
+  outline:none;
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(31,95,153,.10);
+}
+button{
+  cursor:pointer;
+  font-weight:700;
+  transition:.15s;
+}
+button:hover{transform:translateY(-1px)}
+.primary{
+  background:var(--blue);
+  color:#fff;
+  border-color:var(--blue);
+}
+.primary:hover{background:#184f80}
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  padding:12px 18px;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+}
+.stat{
+  background:#f7fafc;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 8px;
+  text-align:center;
+}
+.stat .v{
+  font-size:21px;
+  line-height:1;
+  font-weight:800;
+  color:var(--navy-2);
+}
+.stat .k{
+  margin-top:5px;
+  font-size:8.5px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.45px;
+}
+.nearest{
+  display:none;
+  margin:12px 16px 0;
+  border:1px solid #cfdce8;
+  border-radius:10px;
+  background:#f8fbfd;
+  box-shadow:0 5px 18px rgba(20,50,75,.06);
+  overflow:hidden;
+}
+.nearest.show{display:block}
+.eyebrow{
+  padding:10px 12px 0;
+  font-size:9px;
+  color:var(--blue);
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.nearest-name{
+  padding:3px 12px 0;
+  font-size:16px;
+  font-weight:800;
+  color:var(--navy);
+}
+.nearest-loc{
+  padding:3px 12px 8px;
+  font-size:11px;
+  color:var(--muted);
+  border-bottom:1px solid var(--line);
+}
+.metric{
+  font-size:17px;
+  font-weight:800;
+  color:var(--warning);
+  margin-top:8px;
+}
+.metric small{
+  font-size:9px;
+  color:var(--muted);
+  font-weight:700;
+  text-transform:uppercase;
+}
+.nearest button{
+  border-radius:6px;
+}
+.status{
+  padding:9px 16px;
+  font-size:10.5px;
+  color:var(--muted);
+  border-bottom:1px solid var(--line);
+  background:#fbfcfd;
+}
+.status.ok{
+  color:var(--success);
+  background:#f3faf7;
+}
+.status.err{
+  color:var(--danger);
+  background:#fff7f7;
+}
+.list{
+  overflow:auto;
+  flex:1;
+  padding:8px 10px 18px;
+  background:#fff;
+}
+.list::-webkit-scrollbar{width:8px}
+.list::-webkit-scrollbar-thumb{background:#c8d3dd;border-radius:8px}
+.dept-h{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#eef4f8;
+  padding:8px 9px;
+  font-size:11.5px;
+  font-weight:800;
+  color:var(--navy-2);
+  border:1px solid #dce5ec;
+  border-radius:6px;
+  margin-top:5px;
+  display:flex;
+  justify-content:space-between;
+}
+.commune-h{
+  padding:8px 8px 3px;
+  font-size:9.5px;
+  color:var(--blue);
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.st{
+  padding:8px 9px;
+  border-radius:6px;
+  cursor:pointer;
+  display:flex;
+  gap:8px;
+  border-left:3px solid transparent;
+}
+.st:hover{
+  background:#f5f8fb;
+  border-left-color:var(--blue-2);
+}
+.dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--danger);
+  margin-top:5px;
+  flex:none;
+}
+.nm{
+  font-size:12px;
+  font-weight:700;
+  color:var(--text);
+}
+.mt{
+  font-size:10px;
+  color:var(--muted);
+  margin-top:2px;
+}
+.mapwrap{
+  position:relative;
+  min-width:0;
+  background:#dceaf2;
+}
+#map{
+  height:100%;
+  width:100%;
+  background:#dceaf2;
+}
+#fatal{
+  display:none;
+  position:absolute;
+  inset:0;
+  background:#eef4f8;
+  color:var(--navy);
+  padding:30px;
+  font-size:15px;
+  z-index:20;
+}
+.badge{
+  position:absolute;
+  right:14px;
+  bottom:14px;
+  z-index:500;
+  background:rgba(255,255,255,.94);
+  color:var(--navy-2);
+  border:1px solid #ccd8e2;
+  border-radius:7px;
+  padding:7px 10px;
+  font-size:9.5px;
+  font-weight:700;
+  box-shadow:0 3px 14px rgba(15,35,55,.10);
+}
+.leaflet-control-layers,
+.leaflet-bar{
+  box-shadow:0 3px 14px rgba(15,35,55,.12)!important;
+  border:1px solid #cbd6df!important;
+}
+.leaflet-popup-content-wrapper{
+  border-radius:8px;
+  box-shadow:var(--shadow);
+}
+.leaflet-popup-content{
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+}
+#clearRouteBtn{
+  font-weight:700!important;
+  border-radius:7px!important;
+  box-shadow:0 4px 14px rgba(15,35,55,.12);
+}
+@media(max-width:850px){
+  .app{
+    grid-template-columns:1fr;
+    grid-template-rows:56% 44%;
+  }
+  .side{
+    border-right:0;
+    border-bottom:1px solid var(--line);
+  }
+}
+
+.leaflet-tooltip.station-label{
+  background:rgba(255,255,255,.94);
+  color:#0b1f33;
+  border:1px solid #c7d3df;
+  border-radius:5px;
+  box-shadow:0 2px 8px rgba(15,35,55,.12);
+  font-size:10.5px;
+  font-weight:700;
+  padding:3px 6px;
+  white-space:nowrap;
+}
+.leaflet-tooltip.station-label:before{
+  display:none;
+}
+
+
+.display-panel{
+  padding:12px 18px 14px;
+  border-bottom:1px solid var(--line);
+  background:var(--panel);
+}
+.display-title{
+  font-size:9.5px;
+  font-weight:800;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  margin-bottom:8px;
+}
+.map-style-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.map-style-btn,.theme-btn{
+  min-height:38px;
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.map-style-btn.active,.theme-btn.active{
+  background:var(--blue);
+  color:white;
+  border-color:var(--blue);
+}
+.theme-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:8px;
+}
+.metric-card{
+  background:var(--metric-bg)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+}
+.metric-card .metric-value{
+  color:var(--metric-text)!important;
+  font-size:18px!important;
+  font-weight:800!important;
+}
+.metric-card .metric-label{
+  color:#c7d5df!important;
+  font-size:8.5px!important;
+  text-transform:uppercase;
+  letter-spacing:.45px;
+}
+body.night .controls,
+body.night .status,
+body.night .list,
+body.night .stats{
+  background:var(--panel);
+}
+body.night select,
+body.night input,
+body.night button:not(.primary):not(.map-style-btn):not(.theme-btn){
+  background:#0e1a23;
+  color:var(--text);
+  border-color:var(--line);
+}
+body.night .stat{
+  background:#0d1922;
+}
+body.night .dept-h{
+  background:#182a38;
+  color:#dce8f1;
+  border-color:var(--line);
+}
+body.night .nearest{
+  background:#132331;
+  border-color:var(--line);
+}
+body.night .nearest-loc{
+  border-color:var(--line);
+}
+body.night .st:hover{
+  background:#162633;
+}
+
+</style>
+
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="head">
+      <h1>Carte des commissariats de police</h1>
+      <div class="sub">Référentiel cartographique national · Recherche du poste le plus proche et calcul d’itinéraire</div>
+    </div>
+
+    <div class="controls">
+      <div><label>Département</label><select id="dept"></select></div>
+      <div><label>Commune</label><select id="commune"><option value="">Toutes les communes</option></select></div>
+      <div><label>Recherche</label><input id="q" placeholder="Nom, adresse, commune…"></div>
+      <div class="row">
+        <button class="primary" id="haitiBtn">Vue nationale</button>
+        <button id="geoBtn">Ma position</button>
+      </div>
+    </div>
+
+    <div class="display-panel">
+      <div class="display-title">Affichage</div>
+      <div class="map-style-grid">
+        <button class="map-style-btn active" id="planBtn">Plan</button>
+        <button class="map-style-btn" id="satBtn">Satellite</button>
+      </div>
+      <div class="theme-row">
+        <button class="theme-btn active" id="dayBtn">☀ Jour</button>
+        <button class="theme-btn" id="nightBtn">🌙 Nuit</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="v" id="sN">0</div><div class="k">postes</div></div>
+      <div class="stat"><div class="v" id="sC">0</div><div class="k">communes</div></div>
+      <div class="stat"><div class="v" id="sD">0</div><div class="k">départ.</div></div>
+    </div>
+
+    <div class="nearest" id="nearest">
+      <div class="eyebrow">Poste le plus proche</div>
+      <div class="nearest-name" id="nName">—</div>
+      <div class="nearest-loc" id="nLoc">—</div>
+      <div class="metric" id="nDist">—</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div class="metric-card" style="border-radius:9px;padding:8px;text-align:center">
+          <div id="nRoad" class="metric-value">—</div>
+          <div class="metric-label">par la route</div>
+        </div>
+        <div class="metric-card" style="border-radius:9px;padding:8px;text-align:center">
+          <div id="nTime" class="metric-value">—</div>
+          <div class="metric-label">temps estimé</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <button class="primary" id="routeBtn">Recalculer l'itinéraire</button>
+        <button id="mapsBtn">Ouvrir dans Google Maps</button>
+      </div>
+    </div>
+
+    <div id="status" class="status">Chargement de la carte…</div>
+    <div id="list" class="list"></div>
+  </aside>
+
+  <main class="mapwrap">
+    <div id="map"></div>
+    <div id="fatal"></div>
+    <button id="clearRouteBtn" style="display:none;position:absolute;top:12px;right:12px;z-index:600;width:auto;padding:0 12px;background:#fff;color:#18352b;border:1px solid #cbd5db">Effacer l'itinéraire</button>
+    <div class="badge">Référentiel cartographique · 224 points</div>
+  </main>
+</div>
+
+<script>
+const STATIONS = [{"id": 0, "name": "Commissariat", "department": "Artibonite", "commune": "Dessalines", "address": "", "operator": "", "phone": "", "lat": 19.203829, "lon": -72.59579}, {"id": 1, "name": "Commissariat", "department": "Artibonite", "commune": "Dessalines", "address": "", "operator": "", "phone": "", "lat": 19.202903, "lon": -72.596511}, {"id": 2, "name": "Sous-Commissariat de Pont-Sonde", "department": "Artibonite", "commune": "Dessalines", "address": "Pont-Sonde", "operator": "", "phone": "", "lat": 19.157142, "lon": -72.610324}, {"id": 3, "name": "Commissariat / poste sans nom", "department": "Artibonite", "commune": "Gonaïves", "address": "", "operator": "", "phone": "", "lat": 19.44713, "lon": -72.688795}, {"id": 4, "name": "Police de l'ONU", "department": "Artibonite", "commune": "Gonaïves", "address": "", "operator": "", "phone": "", "lat": 19.463138, "lon": -72.687742}, {"id": 5, "name": "UN Base", "department": "Artibonite", "commune": "Gonaïves", "address": "", "operator": "", "phone": "", "lat": 19.461296, "lon": -72.687801}, {"id": 6, "name": "Commissariat de police", "department": "Artibonite", "commune": "Gonaïves", "address": "", "operator": "", "phone": "", "lat": 19.447206, "lon": -72.688947}, {"id": 7, "name": "Commissariat", "department": "Artibonite", "commune": "Grande-Saline", "address": "Rue Lamatinaire", "operator": "", "phone": "", "lat": 19.244944, "lon": -72.774414}, {"id": 8, "name": "Commissariat / poste sans nom", "department": "Artibonite", "commune": "Gros-Morne", "address": "", "operator": "", "phone": "", "lat": 19.671355, "lon": -72.680949}, {"id": 9, "name": "Commissariat de Gros-Morne", "department": "Artibonite", "commune": "Gros-Morne", "address": "", "operator": "", "phone": "", "lat": 19.671406, "lon": -72.681097}, {"id": 10, "name": "Commissariat de L’Estère", "department": "Artibonite", "commune": "L'Estère", "address": "", "operator": "", "phone": "", "lat": 19.299251, "lon": -72.610232}, {"id": 11, "name": "Police Nationale d'Haïti", "department": "Artibonite", "commune": "La Chapelle", "address": "", "operator": "", "phone": "", "lat": 18.910677, "lon": -72.311885}, {"id": 12, "name": "Commissariat de Police de Saint Marc", "department": "Artibonite", "commune": "Saint-Marc", "address": "", "operator": "", "phone": "", "lat": 19.11475, "lon": -72.69879}, {"id": 13, "name": "Police Station", "department": "Artibonite", "commune": "Saint-Marc", "address": "", "operator": "", "phone": "", "lat": 18.951324, "lon": -72.705827}, {"id": 14, "name": "Sous-Commissariat de Frécineau", "department": "Artibonite", "commune": "Saint-Marc", "address": "Jeanton 1", "operator": "", "phone": "", "lat": 19.082155, "lon": -72.719428}, {"id": 15, "name": "Sous-Commissariat", "department": "Artibonite", "commune": "Saint-Michel-de-l'Attalaye", "address": "", "operator": "", "phone": "", "lat": 19.358971, "lon": -72.321284}, {"id": 16, "name": "Commissariat des Verrettes", "department": "Artibonite", "commune": "Verrettes", "address": "Bvd J.J. Dessalines", "operator": "", "phone": "", "lat": 19.051781, "lon": -72.464758}, {"id": 17, "name": "Sous-Commissariat de Désarmes", "department": "Artibonite", "commune": "Verrettes", "address": "", "operator": "", "phone": "", "lat": 18.993365, "lon": -72.390763}, {"id": 18, "name": "Sous-Commissariat de Bigot", "department": "Artibonite", "commune": "Verrettes", "address": "Route Nationale, Bigot", "operator": "", "phone": "", "lat": 19.441229, "lon": -72.672615}, {"id": 19, "name": "Commissariat / poste sans nom", "department": "Centre", "commune": "Belladère", "address": "", "operator": "PNH", "phone": "", "lat": 18.877578, "lon": -71.724833}, {"id": 20, "name": "Commissariat de Belladère", "department": "Centre", "commune": "Belladère", "address": "", "operator": "publique", "phone": "2213-1114", "lat": 18.868792, "lon": -71.759715}, {"id": 21, "name": "Police Nationale d'Haïti", "department": "Centre", "commune": "Boucan-Carré", "address": "", "operator": "", "phone": "", "lat": 18.926071, "lon": -72.147392}, {"id": 22, "name": "Commissariat de Cerca-Carvajal", "department": "Centre", "commune": "Cerca-Carvajal", "address": "", "operator": "", "phone": "", "lat": 19.272448, "lon": -71.945002}, {"id": 23, "name": "Commissariat", "department": "Centre", "commune": "Cerca-la-Source", "address": "", "operator": "", "phone": "", "lat": 19.165251, "lon": -71.790449}, {"id": 24, "name": "Commissariat de Tilory", "department": "Centre", "commune": "Cerca-la-Source", "address": "", "operator": "", "phone": "", "lat": 19.237145, "lon": -71.682757}, {"id": 25, "name": "Commissariat / poste sans nom", "department": "Centre", "commune": "Hinche", "address": "", "operator": "", "phone": "", "lat": 19.147858, "lon": -72.009137}, {"id": 26, "name": "Commissariat / poste sans nom", "department": "Centre", "commune": "Hinche", "address": "", "operator": "", "phone": "", "lat": 19.139095, "lon": -72.002939}, {"id": 27, "name": "Commissariat de Hinche", "department": "Centre", "commune": "Hinche", "address": "", "operator": "", "phone": "", "lat": 19.142482, "lon": -72.007817}, {"id": 28, "name": "Commissariat / poste sans nom", "department": "Centre", "commune": "Lascahobas", "address": "", "operator": "", "phone": "", "lat": 18.83037, "lon": -71.936685}, {"id": 29, "name": "Commissariat / poste sans nom", "department": "Centre", "commune": "Maïssade", "address": "", "operator": "", "phone": "", "lat": 19.174824, "lon": -72.13943}, {"id": 30, "name": "Police Nationale d'Haïti", "department": "Centre", "commune": "Mirebalais", "address": "", "operator": "", "phone": "", "lat": 18.835392, "lon": -72.103715}, {"id": 31, "name": "Sous-Commissariat de Terre Rouge", "department": "Centre", "commune": "Mirebalais", "address": "Route Nationale # 3", "operator": "", "phone": "", "lat": 18.710562, "lon": -72.156939}, {"id": 32, "name": "Police Nationale d'Haïti", "department": "Centre", "commune": "Saut-d'Eau", "address": "", "operator": "", "phone": "", "lat": 18.816408, "lon": -72.204807}, {"id": 33, "name": "Commissariat de police", "department": "Centre", "commune": "Savanette", "address": "", "operator": "", "phone": "", "lat": 18.74484, "lon": -71.82463}, {"id": 34, "name": "Commissariat / poste sans nom", "department": "Centre", "commune": "Thomonde", "address": "", "operator": "", "phone": "", "lat": 19.023308, "lon": -71.965159}, {"id": 35, "name": "Commissariat de Beaumont (projet)", "department": "Grand'Anse", "commune": "Beaumont", "address": "", "operator": "", "phone": "", "lat": 18.471502, "lon": -73.950204}, {"id": 36, "name": "Commissariat de Beaumont", "department": "Grand'Anse", "commune": "Beaumont", "address": "", "operator": "", "phone": "", "lat": 18.47815, "lon": -73.955681}, {"id": 37, "name": "Commissariat de Beaumont (projet)", "department": "Grand'Anse", "commune": "Beaumont", "address": "", "operator": "", "phone": "", "lat": 18.471432, "lon": -73.95012}, {"id": 38, "name": "Commissariat de Bonbon", "department": "Grand'Anse", "commune": "Bonbon", "address": "", "operator": "", "phone": "", "lat": 18.665484, "lon": -74.243229}, {"id": 39, "name": "Commissariat / poste sans nom", "department": "Grand'Anse", "commune": "Dame-Marie", "address": "", "operator": "", "phone": "", "lat": 18.56099, "lon": -74.421767}, {"id": 40, "name": "Commissariat de Dame-Marie", "department": "Grand'Anse", "commune": "Dame-Marie", "address": "", "operator": "", "phone": "", "lat": 18.560969, "lon": -74.421774}, {"id": 41, "name": "Grand Commissariat de Jérémie", "department": "Grand'Anse", "commune": "Jérémie", "address": "La poite Mackandale, centre ville jeremie", "operator": "", "phone": "", "lat": 18.649143, "lon": -74.116748}, {"id": 42, "name": "Sous-Commissariat de Carrefour Bac", "department": "Grand'Anse", "commune": "Moron", "address": "", "operator": "", "phone": "", "lat": 18.634476, "lon": -74.112871}, {"id": 43, "name": "Sous-Commissariat de Moron", "department": "Grand'Anse", "commune": "Moron", "address": "", "operator": "", "phone": "", "lat": 18.560083, "lon": -74.257928}, {"id": 44, "name": "Sous-Commissariat du Duchity", "department": "Grand'Anse", "commune": "Pestel", "address": "", "operator": "", "phone": "", "lat": 18.433585, "lon": -73.902073}, {"id": 45, "name": "Commissariat de l'Anse à Veau", "department": "Nippes", "commune": "Anse-à-Veau", "address": "", "operator": "", "phone": "", "lat": 18.503942, "lon": -73.345269}, {"id": 46, "name": "Commissariat de l'Asile", "department": "Nippes", "commune": "L'Asile", "address": "L'Asile", "operator": "Police Nationale d'Haiti", "phone": "", "lat": 18.383874, "lon": -73.414456}, {"id": 47, "name": "Commissariat de Paillant", "department": "Nippes", "commune": "Paillant", "address": "", "operator": "", "phone": "", "lat": 18.417178, "lon": -73.146789}, {"id": 48, "name": "Commissariat", "department": "Nippes", "commune": "Petit-Trou-de-Nippes", "address": "", "operator": "", "phone": "", "lat": 18.527223, "lon": -73.509553}, {"id": 49, "name": "Commissariat d'Acul-du-Nord", "department": "Nord", "commune": "Acul-du-Nord", "address": "", "operator": "", "phone": "", "lat": 19.679462, "lon": -72.319364}, {"id": 50, "name": "Commissariat de Bahon", "department": "Nord", "commune": "Bahon", "address": "", "operator": "", "phone": "", "lat": 19.47124, "lon": -72.116879}, {"id": 51, "name": "Commissariat de Borgne", "department": "Nord", "commune": "Borgne", "address": "borgne", "operator": "", "phone": "3840-8731", "lat": 19.844844, "lon": -72.522936}, {"id": 52, "name": "Commissariat du Cap-Haïtien", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "Police Nationale d'Haïti (PNH)", "phone": "", "lat": 19.760458, "lon": -72.198196}, {"id": 53, "name": "Direction départementale du Nord (PNH)", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.764176, "lon": -72.196255}, {"id": 54, "name": "Police Militaire", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.758344, "lon": -72.203944}, {"id": 55, "name": "Pompier", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.762288, "lon": -72.202027}, {"id": 56, "name": "Préfecture", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.761607, "lon": -72.201289}, {"id": 57, "name": "Sous-Commissariat de Labadie", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.773045, "lon": -72.247585}, {"id": 58, "name": "Sous-Commissariat de Pont-Neuf", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.749571, "lon": -72.202226}, {"id": 59, "name": "Sous-Commissariat de Barrière Bouteille", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "PNH", "phone": "", "lat": 19.747984, "lon": -72.207666}, {"id": 60, "name": "Sous-Commissariat de l'Aéroport du Cap-Haïtien", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.737768, "lon": -72.194114}, {"id": 61, "name": "Sous-Commissariat de l'Hôpital Justinien", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.762411, "lon": -72.205341}, {"id": 62, "name": "Sous-Commissariat du Haut du Cap", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.722899, "lon": -72.229035}, {"id": 63, "name": "base marine", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "", "phone": "", "lat": 19.757178, "lon": -72.197007}, {"id": 64, "name": "Sous-Commissariat de Barrière Bouteille", "department": "Nord", "commune": "Cap-Haïtien", "address": "", "operator": "Police Nationale d'Haïti", "phone": "", "lat": 19.749561, "lon": -72.202229}, {"id": 65, "name": "Commissariat de La Victoire", "department": "Nord", "commune": "La Victoire", "address": "", "operator": "", "phone": "", "lat": 19.336755, "lon": -72.018576}, {"id": 66, "name": "Sous-Commissariat de Camp Coq", "department": "Nord", "commune": "Limbé", "address": "", "operator": "", "phone": "", "lat": 19.629886, "lon": -72.426695}, {"id": 67, "name": "Commissariat de Bord de Mer", "department": "Nord", "commune": "Limonade", "address": "", "operator": "", "phone": "", "lat": 19.72845, "lon": -72.112332}, {"id": 68, "name": "Commissariat de Police de Limonade", "department": "Nord", "commune": "Limonade", "address": "", "operator": "", "phone": "(509)2228-5099", "lat": 19.668805, "lon": -72.126902}, {"id": 69, "name": "Commissariat / poste sans nom", "department": "Nord", "commune": "Milot", "address": "", "operator": "", "phone": "", "lat": 19.607532, "lon": -72.21487}, {"id": 70, "name": "Commissariat / poste sans nom", "department": "Nord", "commune": "Milot", "address": "", "operator": "", "phone": "", "lat": 19.607693, "lon": -72.214948}, {"id": 71, "name": "Commissariat de Plaine-du-Nord", "department": "Nord", "commune": "Plaine-du-Nord", "address": "", "operator": "", "phone": "", "lat": 19.677266, "lon": -72.269871}, {"id": 72, "name": "Commissariat de Plaisance", "department": "Nord", "commune": "Plaisance", "address": "", "operator": "", "phone": "", "lat": 19.597727, "lon": -72.468747}, {"id": 73, "name": "Commissariat de Quartier-Morin", "department": "Nord", "commune": "Quartier-Morin", "address": "5, La place", "operator": "", "phone": "", "lat": 19.697862, "lon": -72.158051}, {"id": 74, "name": "Commissariat de Quartier-Morin", "department": "Nord", "commune": "Quartier-Morin", "address": "", "operator": "", "phone": "", "lat": 19.697873, "lon": -72.15807}, {"id": 75, "name": "Commissariat de Ranquitte", "department": "Nord", "commune": "Ranquitte", "address": "", "operator": "", "phone": "", "lat": 19.41352, "lon": -72.079574}, {"id": 76, "name": "Commissariat / poste sans nom", "department": "Nord", "commune": "Saint-Raphaël", "address": "", "operator": "", "phone": "", "lat": 19.438081, "lon": -72.200596}, {"id": 77, "name": "Commissariat de Saint-Raphaël", "department": "Nord", "commune": "Saint-Raphaël", "address": "", "operator": "", "phone": "", "lat": 19.438097, "lon": -72.200594}, {"id": 78, "name": "Commissariat / poste sans nom", "department": "Nord-Est", "commune": "Caracol", "address": "", "operator": "", "phone": "", "lat": 19.648972, "lon": -71.985423}, {"id": 79, "name": "Commissariat de Police de Caracol", "department": "Nord-Est", "commune": "Caracol", "address": "", "operator": "", "phone": "", "lat": 19.691111, "lon": -72.018275}, {"id": 80, "name": "Commissariat de Police de Caracol", "department": "Nord-Est", "commune": "Caracol", "address": "", "operator": "", "phone": "", "lat": 19.667928, "lon": -72.019314}, {"id": 81, "name": "Commissariat de Fort-Liberté", "department": "Nord-Est", "commune": "Fort-Liberté", "address": "", "operator": "", "phone": "", "lat": 19.663039, "lon": -71.835747}, {"id": 82, "name": "Commissariat de Police de Fort-Liberté", "department": "Nord-Est", "commune": "Fort-Liberté", "address": "", "operator": "", "phone": "", "lat": 19.664687, "lon": -71.838283}, {"id": 83, "name": "Commissariat de Police de Ouanaminthe", "department": "Nord-Est", "commune": "Ouanaminthe", "address": "", "operator": "", "phone": "", "lat": 19.548361, "lon": -71.724164}, {"id": 84, "name": "Commissariat de Sainte-Suzanne", "department": "Nord-Est", "commune": "Sainte-Suzanne", "address": "", "operator": "", "phone": "", "lat": 19.583841, "lon": -72.089124}, {"id": 85, "name": "Commissariat / poste sans nom", "department": "Nord-Est", "commune": "Terrier-Rouge", "address": "", "operator": "", "phone": "", "lat": 19.634677, "lon": -71.90239}, {"id": 86, "name": "Commissariat de Terrier-Rouge", "department": "Nord-Est", "commune": "Terrier-Rouge", "address": "", "operator": "", "phone": "", "lat": 19.637575, "lon": -71.954063}, {"id": 87, "name": "Commissariat de Trou-du-Nord", "department": "Nord-Est", "commune": "Trou-du-Nord", "address": "", "operator": "", "phone": "", "lat": 19.616618, "lon": -72.021937}, {"id": 88, "name": "Sous-Commissariat", "department": "Nord-Ouest", "commune": "Anse-à-Foleur", "address": "Rue Bazin", "operator": "", "phone": "", "lat": 19.892549, "lon": -72.615159}, {"id": 89, "name": "Commissariat de Bassin-Bleu", "department": "Nord-Ouest", "commune": "Bassin-Bleu", "address": "", "operator": "", "phone": "", "lat": 19.781766, "lon": -72.798854}, {"id": 90, "name": "Commissariat de Chansolme", "department": "Nord-Ouest", "commune": "Chansolme", "address": "", "operator": "", "phone": "", "lat": 19.875574, "lon": -72.835826}, {"id": 91, "name": "Commissariat de Jean-Rabel", "department": "Nord-Ouest", "commune": "Jean-Rabel", "address": "", "operator": "", "phone": "", "lat": 19.854283, "lon": -73.1904}, {"id": 92, "name": "Sous-Commissariat de Mare Rouge", "department": "Nord-Ouest", "commune": "Jean-Rabel", "address": "", "operator": "", "phone": "", "lat": 19.801652, "lon": -73.254816}, {"id": 93, "name": "Commissariat du Môle-Saint-Nicolas", "department": "Nord-Ouest", "commune": "Môle-Saint-Nicolas", "address": "", "operator": "", "phone": "", "lat": 19.807704, "lon": -73.37462}, {"id": 94, "name": "Police Station", "department": "Nord-Ouest", "commune": "Port-de-Paix", "address": "", "operator": "", "phone": "", "lat": 19.938975, "lon": -72.829639}, {"id": 95, "name": "Police Station", "department": "Nord-Ouest", "commune": "Port-de-Paix", "address": "", "operator": "", "phone": "", "lat": 19.940388, "lon": -72.836329}, {"id": 96, "name": "Sous-Commissariat de Trois-Rivières", "department": "Nord-Ouest", "commune": "Port-de-Paix", "address": "", "operator": "", "phone": "", "lat": 19.931879, "lon": -72.848773}, {"id": 97, "name": "Commissariat de l'Arcahaie", "department": "Ouest", "commune": "Arcahaie", "address": "", "operator": "", "phone": "", "lat": 18.773942, "lon": -72.516501}, {"id": 98, "name": "Police Nationale d'Haïti", "department": "Ouest", "commune": "Arcahaie", "address": "", "operator": "", "phone": "", "lat": 18.773953, "lon": -72.517182}, {"id": 99, "name": "Police Nationale d'Haïti", "department": "Ouest", "commune": "Arcahaie", "address": "", "operator": "", "phone": "", "lat": 18.800594, "lon": -72.513854}, {"id": 100, "name": "Sous-Commissariat de Cité Soleil", "department": "Ouest", "commune": "Cité-Soleil", "address": "route nationale #1, cite soleil", "operator": "", "phone": "", "lat": 18.572155, "lon": -72.325976}, {"id": 101, "name": "Sous-Commissariat de Duvivier", "department": "Ouest", "commune": "Cité-Soleil", "address": "Boulevard des americains, Cite soleil", "operator": "PNH", "phone": "", "lat": 18.602521, "lon": -72.322096}, {"id": 102, "name": "Commissariat de Cité-Soleil", "department": "Ouest", "commune": "Cité-Soleil", "address": "cite soleil", "operator": "", "phone": "", "lat": 18.576364, "lon": -72.330587}, {"id": 103, "name": "Sous-commissariat Onaville", "department": "Ouest", "commune": "Corail", "address": "Rue Zero, Rue Corail 3, Corail", "operator": "", "phone": "", "lat": 18.662359, "lon": -72.244714}, {"id": 104, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Cornillon", "address": "", "operator": "", "phone": "", "lat": 18.675603, "lon": -71.952163}, {"id": 105, "name": "Sous-Commissariat de Cornillon", "department": "Ouest", "commune": "Cornillon", "address": "", "operator": "", "phone": "", "lat": 18.675652, "lon": -71.952139}, {"id": 106, "name": "Antenne de Police de la Renaissance", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "Village la Rennaissance, Boulevard des Américains", "operator": "", "phone": "", "lat": 18.62782, "lon": -72.308774}, {"id": 107, "name": "Antenne Bas Morne Cabrit", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "Route Nationale # 3, Croix des Bouquets", "operator": "", "phone": "", "lat": 18.655964, "lon": -72.189739}, {"id": 108, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "", "operator": "", "phone": "", "lat": 18.660793, "lon": -72.290478}, {"id": 109, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "", "operator": "", "phone": "", "lat": 18.609873, "lon": -72.266742}, {"id": 110, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "", "operator": "", "phone": "", "lat": 18.627832, "lon": -72.308795}, {"id": 111, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "", "operator": "", "phone": "", "lat": 18.648824, "lon": -72.253497}, {"id": 112, "name": "Commissariat de Croix-des-Bouquets", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "Rue Des Casenes, Croix des Bouquets", "operator": "", "phone": "", "lat": 18.577359, "lon": -72.224142}, {"id": 113, "name": "Poste PNH de Croix-des-Bouquets", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "", "operator": "", "phone": "", "lat": 18.569743, "lon": -72.216774}, {"id": 114, "name": "Poste de Corail-Cesselesse", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "Route Corail, Route Nationale #3", "operator": "Police Nationale de Haiti", "phone": "", "lat": 18.648864, "lon": -72.253513}, {"id": 115, "name": "Sous-Commissariat de Bon Repos", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "Entre Impasse l'Union et Route Moleard, Route Nationale # 1", "operator": "", "phone": "", "lat": 18.62605, "lon": -72.270476}, {"id": 116, "name": "Sous-commissariat de Calvaire", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "Route de Santo, Croix-des-Bouquets", "operator": "Police National d'Haiti", "phone": "", "lat": 18.576735, "lon": -72.230495}, {"id": 117, "name": "Sous-commissariat de Canaan", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "Route Nationale # 1, Croix des Bouquets", "operator": "Police Nationale d'Haiti", "phone": "", "lat": 18.660024, "lon": -72.290953}, {"id": 118, "name": "Sous-Commissariat de Village de la Renaissance", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "Rue Aristide II, croix-des-bouquets", "operator": "", "phone": "", "lat": 18.631159, "lon": -72.320232}, {"id": 119, "name": "Sous-Commissariat de Village de la Renaissance", "department": "Ouest", "commune": "Croix-des-Bouquets", "address": "", "operator": "", "phone": "", "lat": 18.631205, "lon": -72.320216}, {"id": 120, "name": "CIMO", "department": "Ouest", "commune": "Delmas", "address": "1, entrée route Piste", "operator": "", "phone": "", "lat": 18.559361, "lon": -72.333146}, {"id": 121, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "", "phone": "", "lat": 18.556888, "lon": -72.324675}, {"id": 122, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "Police National d'Haiti", "phone": "", "lat": 18.541239, "lon": -72.287761}, {"id": 123, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "", "phone": "", "lat": 18.553164, "lon": -72.314963}, {"id": 124, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "", "phone": "", "lat": 18.542329, "lon": -72.273359}, {"id": 125, "name": "Commissariat de Delmas", "department": "Ouest", "commune": "Delmas", "address": "Delmas 33, Delmas", "operator": "Police National d'Haiti (PNH)", "phone": "", "lat": 18.561139, "lon": -72.292601}, {"id": 126, "name": "Poste PNH de Delmas", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "", "phone": "", "lat": 18.543851, "lon": -72.301696}, {"id": 127, "name": "Direction générale SONAPI", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "", "phone": "", "lat": 18.573291, "lon": -72.308772}, {"id": 128, "name": "Police Nationale d'Haïti", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "", "phone": "", "lat": 18.56314, "lon": -72.334345}, {"id": 129, "name": "Sous-Commissariat Lysius Salomon Delmas", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "", "phone": "", "lat": 18.569957, "lon": -72.317859}, {"id": 130, "name": "UN Base", "department": "Ouest", "commune": "Delmas", "address": "Terrain Golf PVC", "operator": "", "phone": "", "lat": 18.535678, "lon": -72.301684}, {"id": 131, "name": "UN/ PNH", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "", "phone": "", "lat": 18.563149, "lon": -72.334316}, {"id": 132, "name": "Sous-Commissariat de Fonds-Verrettes", "department": "Ouest", "commune": "Fonds-Verrettes", "address": "", "operator": "", "phone": "", "lat": 18.397233, "lon": -71.855424}, {"id": 133, "name": "Commissariat de Malpasse", "department": "Ouest", "commune": "Ganthier", "address": "", "operator": "Police National d'Haiti (PNH)", "phone": "", "lat": 18.494889, "lon": -71.89048}, {"id": 134, "name": "Commissariat de Ganthier", "department": "Ouest", "commune": "Ganthier", "address": "Route National # 4 Ganthier, Ganthier", "operator": "", "phone": "", "lat": 18.533181, "lon": -72.068024}, {"id": 135, "name": "Sous-Commissariat de Fonds-Parisien", "department": "Ouest", "commune": "Ganthier", "address": "Route National #4, Fonds Parisien", "operator": "", "phone": "", "lat": 18.503607, "lon": -71.968802}, {"id": 136, "name": "Commissariat de Grand-Goâve", "department": "Ouest", "commune": "Grand-Goâve", "address": "", "operator": "", "phone": "", "lat": 18.427892, "lon": -72.768551}, {"id": 137, "name": "Sous-Commissariat de Carrefour Duford", "department": "Ouest", "commune": "Léogâne", "address": "", "operator": "", "phone": "", "lat": 18.456409, "lon": -72.63402}, {"id": 138, "name": "Commissariat", "department": "Ouest", "commune": "Léogâne", "address": "grand rue, leogane", "operator": "", "phone": "", "lat": 18.51093, "lon": -72.632327}, {"id": 139, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Petit-Goâve", "address": "", "operator": "", "phone": "", "lat": 18.436752, "lon": -72.850264}, {"id": 140, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Petit-Goâve", "address": "", "operator": "", "phone": "", "lat": 18.433758, "lon": -72.86672}, {"id": 141, "name": "Sous-Commissariat de Petit-Goâve", "department": "Ouest", "commune": "Petit-Goâve", "address": "", "operator": "", "phone": "", "lat": 18.437395, "lon": -72.849992}, {"id": 142, "name": "Sous-Commissariat de Vialet", "department": "Ouest", "commune": "Petit-Goâve", "address": "", "operator": "", "phone": "", "lat": 18.420358, "lon": -72.931607}, {"id": 143, "name": "Antenne C. Channel", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.548624, "lon": -72.419659}, {"id": 144, "name": "Antenne Drouillard Cité Soleil", "department": "Ouest", "commune": "Cité-Soleil", "address": "", "operator": "", "phone": "", "lat": 18.580512, "lon": -72.312561}, {"id": 145, "name": "Avant-Poste de Carrefour", "department": "Ouest", "commune": "Carrefour", "address": "", "operator": "", "phone": "", "lat": 18.535, "lon": -72.405}, {"id": 146, "name": "Cafeteria PNH", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "PNH", "phone": "", "lat": 18.547885, "lon": -72.344202}, {"id": 147, "name": "Poste PNH de Carrefour Barque", "department": "Ouest", "commune": "Carrefour", "address": "", "operator": "", "phone": "", "lat": 18.535483, "lon": -72.410465}, {"id": 148, "name": "Commissariat de Pernier", "department": "Ouest", "commune": "Pétion-Ville", "address": "", "operator": "", "phone": "", "lat": 18.524497, "lon": -72.22733}, {"id": 149, "name": "Commissariat de La Saline", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "PNH", "phone": "", "lat": 18.558835, "lon": -72.343483}, {"id": 150, "name": "Commissariat de Thomassin", "department": "Ouest", "commune": "Kenscoff", "address": "Rte de Kenscoff", "operator": "", "phone": "", "lat": 18.488168, "lon": -72.312248}, {"id": 151, "name": "Commissariat de Furcy", "department": "Ouest", "commune": "Kenscoff", "address": "", "operator": "", "phone": "", "lat": 18.424829, "lon": -72.294725}, {"id": 152, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.552585, "lon": -72.347277}, {"id": 153, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Pétion-Ville", "address": "", "operator": "", "phone": "", "lat": 18.538048, "lon": -72.29955}, {"id": 154, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.535373, "lon": -72.406973}, {"id": 155, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Tabarre", "address": "", "operator": "", "phone": "", "lat": 18.568837, "lon": -72.260127}, {"id": 156, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Cité-Soleil", "address": "", "operator": "", "phone": "", "lat": 18.575315, "lon": -72.305287}, {"id": 157, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Kenscoff", "address": "", "operator": "", "phone": "", "lat": 18.497656, "lon": -72.320085}, {"id": 158, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.576955, "lon": -72.33068}, {"id": 159, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Tabarre", "address": "", "operator": "", "phone": "", "lat": 18.554789, "lon": -72.24981}, {"id": 160, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Pétion-Ville", "address": "", "operator": "", "phone": "", "lat": 18.514815, "lon": -72.268795}, {"id": 161, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Tabarre", "address": "", "operator": "", "phone": "", "lat": 18.57512, "lon": -72.294962}, {"id": 162, "name": "Commissariat / poste sans nom", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.565332, "lon": -72.348562}, {"id": 163, "name": "Commissariat de Carrefour Omega", "department": "Ouest", "commune": "Carrefour", "address": "", "operator": "", "phone": "", "lat": 18.534264, "lon": -72.39457}, {"id": 164, "name": "Commissariat de Gressier", "department": "Ouest", "commune": "Gressier", "address": "", "operator": "", "phone": "", "lat": 18.540866, "lon": -72.526975}, {"id": 165, "name": "Commissariat de Kenscoff", "department": "Ouest", "commune": "Kenscoff", "address": "", "operator": "", "phone": "", "lat": 18.449112, "lon": -72.285262}, {"id": 166, "name": "Commissariat de Police Epower", "department": "Ouest", "commune": "Cité-Soleil", "address": "Rue Lisius, P-au-P", "operator": "", "phone": "", "lat": 18.586122, "lon": -72.317358}, {"id": 167, "name": "Commissariat de Police de l'Aéroport Toussaint Louverture", "department": "Ouest", "commune": "Tabarre", "address": "", "operator": "", "phone": "", "lat": 18.575231, "lon": -72.295879}, {"id": 168, "name": "Commissariat de Salomon", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.535373, "lon": -72.33956}, {"id": 169, "name": "Direction générale de la PNH", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.524731, "lon": -72.326129}, {"id": 170, "name": "Fort Island - Police Station", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.554937, "lon": -72.350939}, {"id": 171, "name": "Guard booth", "department": "Ouest", "commune": "Kenscoff", "address": "", "operator": "", "phone": "", "lat": 18.495586, "lon": -72.283352}, {"id": 172, "name": "Habitation Leclerc", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.525423, "lon": -72.361864}, {"id": 173, "name": "Inspectors", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.532104, "lon": -72.32174}, {"id": 174, "name": "Katye Jeneral Lapolis", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.545248, "lon": -72.339297}, {"id": 175, "name": "Marine Haitienne", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.532351, "lon": -72.379356}, {"id": 176, "name": "Commissariat de Port-au-Prince n°1", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.533944, "lon": -72.390226}, {"id": 177, "name": "Poste PNH du Champ de Mars", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.539347, "lon": -72.336586}, {"id": 178, "name": "Police Nationale d'Haïti", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "PNH", "phone": "", "lat": 18.565774, "lon": -72.333716}, {"id": 179, "name": "Police de Pétion-Ville", "department": "Ouest", "commune": "Pétion-Ville", "address": "", "operator": "", "phone": "", "lat": 18.509499, "lon": -72.287125}, {"id": 180, "name": "Police Nationale d'Haïti", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "PNH", "phone": "", "lat": 18.550324, "lon": -72.34621}, {"id": 181, "name": "Sous-Commissariat de Canapé-Vert", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.532866, "lon": -72.314572}, {"id": 182, "name": "Sous-Commissariat de Musseau (Delmas 62)", "department": "Ouest", "commune": "Delmas", "address": "", "operator": "PNH", "phone": "", "lat": 18.527113, "lon": -72.287054}, {"id": 183, "name": "Sous-Commissariat de Fort Jacques", "department": "Ouest", "commune": "Kenscoff", "address": "", "operator": "PNH", "phone": "", "lat": 18.464565, "lon": -72.289067}, {"id": 184, "name": "Sous-Commissariat de Carrefour", "department": "Ouest", "commune": "Carrefour", "address": "", "operator": "", "phone": "", "lat": 18.538295, "lon": -72.409542}, {"id": 185, "name": "Sous-Commissariat de Cazeau", "department": "Ouest", "commune": "Tabarre", "address": "Cazeau", "operator": "", "phone": "3444-7065", "lat": 18.58782, "lon": -72.294693}, {"id": 186, "name": "Sous-Commissariat de Martissant", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.533002, "lon": -72.355881}, {"id": 187, "name": "Sous-Commissariat de Police de Grand Ravine", "department": "Ouest", "commune": "Port-au-Prince", "address": "Carrefour Feuille (Grand Ravine), port-au-prince", "operator": "", "phone": "", "lat": 18.526214, "lon": -72.356027}, {"id": 188, "name": "Sous-Commissariat de Portail Léogâne", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.536359, "lon": -72.34555}, {"id": 189, "name": "Sous-Commissariat de Vivy Mitchell", "department": "Ouest", "commune": "Pétion-Ville", "address": "", "operator": "Police National d'Haiti (PNH)", "phone": "", "lat": 18.527351, "lon": -72.266465}, {"id": 190, "name": "Stade National Sylvio Cator", "department": "Ouest", "commune": "Port-au-Prince", "address": "", "operator": "", "phone": "", "lat": 18.53697, "lon": -72.343052}, {"id": 191, "name": "Commissariat de Tabarre", "department": "Ouest", "commune": "Tabarre", "address": "", "operator": "", "phone": "", "lat": 18.580805, "lon": -72.268078}, {"id": 192, "name": "Commissariat de Tabarre", "department": "Ouest", "commune": "Tabarre", "address": "tabarre", "operator": "PNH", "phone": "", "lat": 18.585577, "lon": -72.273511}, {"id": 193, "name": "Commissariat de Thomazeau", "department": "Ouest", "commune": "Thomazeau", "address": "", "operator": "Police National d'Haiti", "phone": "", "lat": 18.651203, "lon": -72.09425}, {"id": 194, "name": "Police Nationale d'Haïti", "department": "Sud", "commune": "Aquin", "address": "", "operator": "", "phone": "", "lat": 18.277635, "lon": -73.394958}, {"id": 195, "name": "Commissariat de Camp-Perrin", "department": "Sud", "commune": "Camp-Perrin", "address": "", "operator": "", "phone": "", "lat": 18.319828, "lon": -73.866345}, {"id": 196, "name": "Commissariat de Cavaillon", "department": "Sud", "commune": "Cavaillon", "address": "", "operator": "", "phone": "", "lat": 18.299186, "lon": -73.655511}, {"id": 197, "name": "Commissariat / poste sans nom", "department": "Sud", "commune": "Chantal", "address": "", "operator": "", "phone": "", "lat": 18.206022, "lon": -73.889264}, {"id": 198, "name": "Commissariat des Coteaux", "department": "Sud", "commune": "Coteaux", "address": "", "operator": "", "phone": "", "lat": 18.204707, "lon": -74.040813}, {"id": 199, "name": "Commissariat des Anglais", "department": "Sud", "commune": "Les Anglais", "address": "", "operator": "", "phone": "", "lat": 18.304972, "lon": -74.220366}, {"id": 200, "name": "Commissariat des Cayes", "department": "Sud", "commune": "Les Cayes", "address": "", "operator": "", "phone": "", "lat": 18.194174, "lon": -73.755313}, {"id": 201, "name": "Commissariat des Cayes", "department": "Sud", "commune": "Les Cayes", "address": "", "operator": "", "phone": "", "lat": 18.195106, "lon": -73.755569}, {"id": 202, "name": "Garde-côtes", "department": "Sud", "commune": "Les Cayes", "address": "", "operator": "", "phone": "", "lat": 18.19013, "lon": -73.750123}, {"id": 203, "name": "Police Nationale d'Haïti", "department": "Sud", "commune": "Les Cayes", "address": "", "operator": "", "phone": "", "lat": 18.193739, "lon": -73.748571}, {"id": 204, "name": "Sous-Commissariat des Quatre Chemins", "department": "Sud", "commune": "Les Cayes", "address": "", "operator": "", "phone": "", "lat": 18.207477, "lon": -73.758876}, {"id": 205, "name": "Commissariat de Maniche", "department": "Sud", "commune": "Maniche", "address": "", "operator": "", "phone": "", "lat": 18.34389, "lon": -73.776935}, {"id": 206, "name": "Commissariat de Port-Salut", "department": "Sud", "commune": "Port-Salut", "address": "", "operator": "", "phone": "", "lat": 18.076954, "lon": -73.917495}, {"id": 207, "name": "Commissariat / poste sans nom", "department": "Sud", "commune": "Roche-à-Bateau", "address": "", "operator": "", "phone": "", "lat": 18.182752, "lon": -74.005568}, {"id": 208, "name": "Commissariat / poste sans nom", "department": "Sud", "commune": "Saint-Jean-du-Sud", "address": "", "operator": "", "phone": "", "lat": 18.07618, "lon": -73.81269}, {"id": 209, "name": "Police Nationale d'Haïti", "department": "Sud", "commune": "Saint-Louis-du-Sud", "address": "", "operator": "", "phone": "", "lat": 18.262487, "lon": -73.546572}, {"id": 210, "name": "Commissariat de L'Île-à-Vache", "department": "Sud", "commune": "Île-à-Vache", "address": "", "operator": "", "phone": "", "lat": 18.083429, "lon": -73.652304}, {"id": 211, "name": "Commissariat / poste sans nom", "department": "Sud-Est", "commune": "Anse-à-Pitres", "address": "", "operator": "", "phone": "", "lat": 18.038219, "lon": -71.762463}, {"id": 212, "name": "Commissariat de Bainet", "department": "Sud-Est", "commune": "Bainet", "address": "", "operator": "", "phone": "", "lat": 18.186273, "lon": -72.750463}, {"id": 213, "name": "Commissariat de Belle-Anse", "department": "Sud-Est", "commune": "Belle-Anse", "address": "", "operator": "", "phone": "", "lat": 18.236024, "lon": -72.066924}, {"id": 214, "name": "Commissariat de Belle-Anse", "department": "Sud-Est", "commune": "Belle-Anse", "address": "", "operator": "", "phone": "3748-7433", "lat": 18.236112, "lon": -72.066918}, {"id": 215, "name": "Commissariat de Cayes-Jacmel", "department": "Sud-Est", "commune": "Cayes-Jacmel", "address": "", "operator": "", "phone": "", "lat": 18.230402, "lon": -72.397857}, {"id": 216, "name": "Sous-Commissariat de Decouze", "department": "Sud-Est", "commune": "Jacmel", "address": "", "operator": "", "phone": "", "lat": 18.339077, "lon": -72.582497}, {"id": 217, "name": "Direction départementale du Sud-Est (PNH)", "department": "Sud-Est", "commune": "Jacmel", "address": "rue de la comedie", "operator": "", "phone": "3750-2987", "lat": 18.239547, "lon": -72.539174}, {"id": 218, "name": "station de police bassin cayman", "department": "Sud-Est", "commune": "Jacmel", "address": "bassin cayman, jacmel", "operator": "", "phone": "", "lat": 18.255585, "lon": -72.547872}, {"id": 219, "name": "Commissariat / poste sans nom", "department": "Sud-Est", "commune": "La Vallée-de-Jacmel", "address": "ridore, la vallé Jacmel", "operator": "", "phone": "", "lat": 18.269303, "lon": -72.663771}, {"id": 220, "name": "Commissariat / poste sans nom", "department": "Sud-Est", "commune": "Marigot", "address": "commissariat de marigot", "operator": "", "phone": "", "lat": 18.231601, "lon": -72.324861}, {"id": 221, "name": "Commissariat de Sequin", "department": "Sud-Est", "commune": "Marigot", "address": "", "operator": "", "phone": "", "lat": 18.315173, "lon": -72.23885}, {"id": 222, "name": "Commissariat de Marigot", "department": "Sud-Est", "commune": "Marigot", "address": "", "operator": "", "phone": "37-76-04-55", "lat": 18.231713, "lon": -72.324997}, {"id": 223, "name": "Commissariat de Thiotte", "department": "Sud-Est", "commune": "Thiotte", "address": "", "operator": "", "phone": "", "lat": 18.244155, "lon": -71.84311}];
+
+const leafletCSS = [
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+  "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+];
+
+const leafletJS = [
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+  "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"
+];
+
+function loadCSS(url) {
+  const l=document.createElement("link");
+  l.rel="stylesheet"; l.href=url;
+  document.head.appendChild(l);
+}
+
+function loadScriptSequential(urls, index=0) {
+  return new Promise((resolve,reject)=>{
+    if(index>=urls.length) return reject(new Error("Leaflet indisponible"));
+    const s=document.createElement("script");
+    s.src=urls[index];
+    s.onload=()=>resolve(urls[index]);
+    s.onerror=()=>{s.remove();loadScriptSequential(urls,index+1).then(resolve).catch(reject)};
+    document.head.appendChild(s);
+  });
+}
+
+leafletCSS.forEach(loadCSS);
+
+document.addEventListener("DOMContentLoaded", async ()=>{
+  try {
+    if(typeof L==="undefined") await loadScriptSequential(leafletJS);
+    if(typeof L==="undefined") throw new Error("Leaflet non chargé");
+    initApp();
+  } catch(err) {
+    document.getElementById("status").textContent="Impossible de charger Leaflet.";
+    document.getElementById("status").className="status err";
+    const f=document.getElementById("fatal");
+    f.style.display="block";
+    f.innerHTML="<b>La bibliothèque cartographique Leaflet n'a pas pu être chargée.</b><br><br>Le fichier contient bien les 224 postes, mais le navigateur bloque les scripts externes. Essaie l'ouverture directe dans Chrome avec Internet.";
+  }
+});
+
+function initApp() {
+  const deptSel=document.getElementById("dept");
+  const communeSel=document.getElementById("commune");
+  const q=document.getElementById("q");
+  const status=document.getElementById("status");
+
+  document.getElementById("planBtn").onclick=()=>setBase(
+    document.body.classList.contains("night") ? dark : osm,
+    "plan"
+  );
+  document.getElementById("satBtn").onclick=()=>setBase(esri,"satellite");
+
+  function setTheme(mode){
+    const night=mode==="night";
+    document.body.classList.toggle("night",night);
+    document.getElementById("dayBtn").classList.toggle("active",!night);
+    document.getElementById("nightBtn").classList.toggle("active",night);
+
+    // En mode nuit, si le fond plan est actif, passer au fond sombre.
+    if(!map.hasLayer(esri)){
+      setBase(night ? dark : osm,"plan");
+    }
+    localStorage.setItem("commissariats_theme",mode);
+  }
+
+  document.getElementById("dayBtn").onclick=()=>setTheme("day");
+  document.getElementById("nightBtn").onclick=()=>setTheme("night");
+
+  let visible=[...STATIONS];
+  let markerLayer=L.layerGroup();
+  let markers=new Map();
+  let originMarker=null;
+  let nearestMarker=null;
+  let currentOrigin=null;
+  let currentNearest=null;
+  let routeLayers=[];
+
+  const map=L.map("map",{zoomControl:true,preferCanvas:true}).setView([18.95,-72.75],8);
+
+  const osm=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom:19,
+    attribution:"&copy; OpenStreetMap contributors"
+  }).addTo(map);
+
+  const esri=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom:19,
+    attribution:"Tiles &copy; Esri"
+  });
+
+  const dark=L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+    maxZoom:20,
+    attribution:"&copy; OpenStreetMap &copy; CARTO"
+  });
+
+  let currentBase=osm;
+
+  function setBase(layer,name){
+    [osm,esri,dark].forEach(l=>{if(map.hasLayer(l)) map.removeLayer(l)});
+    currentBase=layer;
+    layer.addTo(map);
+    document.getElementById("planBtn").classList.toggle("active",name==="plan");
+    document.getElementById("satBtn").classList.toggle("active",name==="satellite");
+  }
+  markerLayer.addTo(map);
+
+  const savedTheme=localStorage.getItem("commissariats_theme");
+  if(savedTheme==="night") setTheme("night");
+
+  const depts=[...new Set(STATIONS.map(s=>s.department))].sort((a,b)=>a.localeCompare(b,"fr"));
+  deptSel.innerHTML='<option value="">Tous les départements</option>'+depts.map(d=>`<option>${escapeHtml(d)}</option>`).join("");
+
+  function refreshCommunes() {
+    const d=deptSel.value;
+    const communes=[...new Set(STATIONS.filter(s=>!d||s.department===d).map(s=>s.commune))].sort((a,b)=>a.localeCompare(b,"fr"));
+    communeSel.innerHTML='<option value="">Toutes les communes</option>'+communes.map(c=>`<option>${escapeHtml(c)}</option>`).join("");
+  }
+
+  function applyFilters(zoom=true) {
+    const d=deptSel.value, c=communeSel.value, qq=q.value.trim().toLowerCase();
+    visible=STATIONS.filter(s=>
+      (!d||s.department===d) &&
+      (!c||s.commune===c) &&
+      (!qq||(`${s.name} ${s.address} ${s.commune} ${s.department}`).toLowerCase().includes(qq))
+    );
+
+    drawMarkers();
+    updateMarkerLabels();
+    renderList();
+
+    document.getElementById("sN").textContent=visible.length;
+    document.getElementById("sC").textContent=new Set(visible.map(s=>s.commune)).size;
+    document.getElementById("sD").textContent=new Set(visible.map(s=>s.department)).size;
+
+    if(zoom) zoomVisible();
+  }
+
+  function drawMarkers() {
+    markerLayer.clearLayers();
+    markers.clear();
+
+    for(const s of visible) {
+      const m=L.circleMarker([s.lat,s.lon], {
+        radius:7,
+        color:"#ffffff",
+        weight:2,
+        fillColor:"#b43b3b",
+        fillOpacity:.97
+      });
+
+      m._stationData = s;
+      m.bindTooltip(displayName(s.name,s.commune),{
+        permanent:false,
+        direction:"top",
+        offset:[0,-8],
+        className:"station-label",
+        opacity:.96
+      });
+
+      m.bindPopup(`
+        <div style="font-family:Arial,sans-serif;min-width:190px">
+          <b>${escapeHtml(displayName(s.name,s.commune))}</b><br>
+          <span>${escapeHtml(s.commune)} — ${escapeHtml(s.department)}</span>
+          ${s.address?`<br><span>${escapeHtml(s.address)}</span>`:""}
+          <br><small>${s.lat.toFixed(6)}, ${s.lon.toFixed(6)}</small>
+        </div>
+      `);
+
+      m.addTo(markerLayer);
+      markers.set(s.id,m);
+    }
+  }
+
+
+  function updateMarkerLabels() {
+    const z=map.getZoom();
+
+    markers.forEach((m,id)=>{
+      const s=m._stationData;
+      if(!s) return;
+
+      // Afficher les noms à partir d'un zoom local.
+      if(z>=13) {
+        if(!m.getTooltip()) {
+          m.bindTooltip(displayName(s.name,s.commune),{
+            permanent:true,
+            direction:"top",
+            offset:[0,-9],
+            className:"station-label",
+            opacity:.96
+          });
+        } else {
+          const tt=m.getTooltip();
+          if(tt && !tt.options.permanent) {
+            m.unbindTooltip();
+            m.bindTooltip(displayName(s.name,s.commune),{
+              permanent:true,
+              direction:"top",
+              offset:[0,-9],
+              className:"station-label",
+              opacity:.96
+            });
+          }
+        }
+        m.openTooltip();
+      } else {
+        const tt=m.getTooltip();
+        if(tt && tt.options.permanent) {
+          m.unbindTooltip();
+          m.bindTooltip(displayName(s.name,s.commune),{
+            permanent:false,
+            direction:"top",
+            offset:[0,-8],
+            className:"station-label",
+            opacity:.96
+          });
+        }
+        m.closeTooltip();
+      }
+    });
+  }
+
+  function renderList() {
+    const el=document.getElementById("list");
+    el.innerHTML="";
+    const groups={};
+    visible.forEach(s=>{(groups[s.department]??={});(groups[s.department][s.commune]??=[]).push(s)});
+
+    for(const dep of Object.keys(groups).sort((a,b)=>a.localeCompare(b,"fr"))) {
+      let total=Object.values(groups[dep]).reduce((n,a)=>n+a.length,0);
+      el.insertAdjacentHTML("beforeend",`<div class="dept-h"><span>${escapeHtml(dep)}</span><span>${total}</span></div>`);
+      for(const com of Object.keys(groups[dep]).sort((a,b)=>a.localeCompare(b,"fr"))) {
+        el.insertAdjacentHTML("beforeend",`<div class="commune-h">${escapeHtml(com)} · ${groups[dep][com].length}</div>`);
+        for(const s of groups[dep][com]) {
+          const r=document.createElement("div");
+          r.className="st";
+          r.innerHTML=`<div class="dot"></div><div><div class="nm">${escapeHtml(displayName(s.name,s.commune))}</div><div class="mt">${escapeHtml(s.address||"Adresse non renseignée")}</div></div>`;
+          r.onclick=()=>{
+            map.setView([s.lat,s.lon],16);
+            const m=markers.get(s.id);
+            if(m) m.openPopup();
+          };
+          el.appendChild(r);
+        }
+      }
+    }
+  }
+
+  function zoomVisible() {
+    if(!visible.length) return;
+    const bounds=L.latLngBounds(visible.map(s=>[s.lat,s.lon]));
+    map.fitBounds(bounds,{padding:[30,30],maxZoom:14});
+  }
+
+  function nearestTo(lat,lon) {
+    let best=null, bd=Infinity;
+    for(const s of STATIONS) {
+      const d=haversine(lat,lon,s.lat,s.lon);
+      if(d<bd) {bd=d;best=s}
+    }
+    return {station:best,distance:bd};
+  }
+
+
+  async function fetchRoute(from,to) {
+    const url=`https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${to.lon},${to.lat}?overview=full&geometries=geojson`;
+    try {
+      const r=await fetch(url);
+      if(!r.ok) throw new Error("OSRM HTTP "+r.status);
+      const j=await r.json();
+      if(!j.routes || !j.routes.length) return null;
+      const rt=j.routes[0];
+      return {
+        distance:rt.distance,
+        duration:rt.duration,
+        coords:rt.geometry.coordinates.map(c=>[c[1],c[0]])
+      };
+    } catch(err) {
+      console.warn("OSRM indisponible",err);
+      return null;
+    }
+  }
+
+  function clearRoute() {
+    routeLayers.forEach(l=>map.removeLayer(l));
+    routeLayers=[];
+    document.getElementById("clearRouteBtn").style.display="none";
+  }
+
+  async function updateRoadMetrics(from,to) {
+    document.getElementById("nRoad").textContent="…";
+    document.getElementById("nTime").textContent="…";
+    const r=await fetchRoute(from,to);
+    if(!r) {
+      document.getElementById("nRoad").textContent="n/d";
+      document.getElementById("nTime").textContent="n/d";
+      return null;
+    }
+    document.getElementById("nRoad").textContent=formatDistance(r.distance/1000);
+    document.getElementById("nTime").textContent=formatDuration(r.duration);
+    return r;
+  }
+
+  async function drawRoute() {
+    if(!currentOrigin || !currentNearest) return;
+    clearRoute();
+
+    document.getElementById("routeBtn").textContent="Calcul en cours…";
+    document.getElementById("routeBtn").disabled=true;
+
+    const r=await fetchRoute(currentOrigin,currentNearest);
+
+    document.getElementById("routeBtn").textContent="Recalculer l'itinéraire";
+    document.getElementById("routeBtn").disabled=false;
+
+    if(!r) {
+      const fallback=L.polyline(
+        [[currentOrigin.lat,currentOrigin.lon],[currentNearest.lat,currentNearest.lon]],
+        {color:"#2e78b7",weight:4,dashArray:"8 8",opacity:.9}
+      ).addTo(map);
+      routeLayers.push(fallback);
+      map.fitBounds(fallback.getBounds().pad(.25));
+      document.getElementById("clearRouteBtn").style.display="block";
+      document.getElementById("nRoad").textContent="n/d";
+      document.getElementById("nTime").textContent="n/d";
+      document.getElementById("status").textContent=
+        "Itinéraire routier indisponible — ligne directe affichée.";
+      document.getElementById("status").className="status err";
+      return;
+    }
+
+    const halo=L.polyline(r.coords,{color:"#2e78b7",weight:10,opacity:.18}).addTo(map);
+    const line=L.polyline(r.coords,{color:"#1f5f99",weight:5,opacity:.95}).addTo(map);
+    routeLayers.push(halo,line);
+
+    map.fitBounds(line.getBounds().pad(.18));
+    document.getElementById("clearRouteBtn").style.display="block";
+
+    document.getElementById("nRoad").textContent=formatDistance(r.distance/1000);
+    document.getElementById("nTime").textContent=formatDuration(r.duration);
+
+    document.getElementById("status").textContent=
+      "Itinéraire calculé : "+formatDistance(r.distance/1000)+
+      " · durée approximative "+formatDuration(r.duration)+".";
+    document.getElementById("status").className="status ok";
+  }
+
+  function setOrigin(lat,lon,label) {
+    clearRoute();
+
+    if(originMarker) map.removeLayer(originMarker);
+    if(nearestMarker) map.removeLayer(nearestMarker);
+
+    currentOrigin={lat,lon};
+
+    originMarker=L.circleMarker([lat,lon],{
+      radius:9,color:"#fff",weight:2.5,fillColor:"#1f7a5a",fillOpacity:1
+    }).addTo(map).bindPopup(label||"Point choisi").openPopup();
+
+    const r=nearestTo(lat,lon);
+    const s=r.station;
+    currentNearest=s;
+
+    nearestMarker=L.circleMarker([s.lat,s.lon],{
+      radius:10,color:"#0c1f18",weight:2.5,fillColor:"#c58a1b",fillOpacity:1
+    }).addTo(map).bindPopup("<b>"+escapeHtml(displayName(s.name,s.commune))+"</b>");
+
+    document.getElementById("nearest").classList.add("show");
+    document.getElementById("nName").textContent=displayName(s.name,s.commune);
+    document.getElementById("nLoc").textContent=s.commune+" — "+s.department;
+    document.getElementById("nDist").innerHTML=formatDistance(r.distance)+" <small>à vol d'oiseau</small>";
+
+    document.getElementById("nRoad").textContent="…";
+    document.getElementById("nTime").textContent="…";
+
+    document.getElementById("mapsBtn").onclick=()=>window.open(
+      `https://www.google.com/maps/dir/?api=1&origin=${lat},${lon}&destination=${s.lat},${s.lon}&travelmode=driving`,
+      "_blank"
+    );
+
+    document.getElementById("routeBtn").onclick=drawRoute;
+
+    map.fitBounds(L.latLngBounds([[lat,lon],[s.lat,s.lon]]).pad(.45),{maxZoom:15});
+
+    /* Tracer automatiquement l'itinéraire dès que le poste le plus proche est trouvé. */
+    drawRoute();
+  }
+
+  map.on("click",e=>setOrigin(e.latlng.lat,e.latlng.lng,"Point choisi"));
+  map.on("zoomend",updateMarkerLabels);
+
+  deptSel.onchange=()=>{refreshCommunes();applyFilters(true)};
+  communeSel.onchange=()=>applyFilters(true);
+  q.oninput=()=>applyFilters(false);
+
+  document.getElementById("haitiBtn").onclick=()=>{
+    deptSel.value="";
+    refreshCommunes();
+    communeSel.value="";
+    q.value="";
+    applyFilters(true);
+  };
+
+  document.getElementById("clearRouteBtn").onclick=clearRoute;
+
+  document.getElementById("geoBtn").onclick=()=>{
+    if(!navigator.geolocation) return alert("Géolocalisation indisponible.");
+    navigator.geolocation.getCurrentPosition(
+      p=>setOrigin(p.coords.latitude,p.coords.longitude,"Ma position"),
+      ()=>alert("Impossible d'obtenir la position."),
+      {enableHighAccuracy:true,timeout:12000,maximumAge:0}
+    );
+  };
+
+  refreshCommunes();
+  applyFilters(true);
+
+  setTimeout(()=>{
+    map.invalidateSize(true);
+    zoomVisible();
+  },250);
+
+  status.textContent="Carte chargée — 224 postes disponibles.";
+  status.className="status ok";
+}
+
+function escapeHtml(v) {
+  return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+function displayName(n, commune="") {
+  const nom=String(n||"").trim();
+  const com=String(commune||"").trim();
+
+  if(!nom.toLowerCase().startsWith("commissariat / poste")) return nom;
+  if(!com) return "Commissariat";
+
+  const DU = new Set([
+    "Cap-Haïtien","Môle-Saint-Nicolas","Borgne","Limbé",
+    "Petit-Goâve","Grand-Goâve","Trou-du-Nord"
+  ]);
+
+  const DE_LA = new Set([
+    "La Chapelle","La Victoire","La Vallée-de-Jacmel"
+  ]);
+
+  const DES = new Set([
+    "Gonaïves","Cayes","Coteaux","Anglais","Verrettes"
+  ]);
+
+  const DE_L = new Set([
+    "Arcahaie","Asile","Estère"
+  ]);
+
+  if(com.startsWith("L'") || com.startsWith("L’")) {
+    return "Commissariat de " + com.toLowerCase().replace(/^l['’]/,"l’");
+  }
+  if(com.startsWith("Le ")) return "Commissariat du " + com.slice(3);
+  if(com.startsWith("Les ")) return "Commissariat des " + com.slice(4);
+  if(com.startsWith("La ")) return "Commissariat de la " + com.slice(3);
+
+  if(DU.has(com)) return "Commissariat du " + com;
+  if(DE_L.has(com)) return "Commissariat de l’" + com;
+  if(DE_LA.has(com)) return "Commissariat de la " + com.replace(/^La\s+/,"");
+  if(DES.has(com)) return "Commissariat des " + com.replace(/^Les\s+/,"");
+
+  if(/^[AEIOUYÀÂÄÉÈÊËÎÏÔÖÙÛÜH]/i.test(com)) {
+    return "Commissariat d’" + com;
+  }
+
+  return "Commissariat de " + com;
+}
+
+function haversine(a,b,c,d) {
+  const R=6371, rad=x=>x*Math.PI/180;
+  const dLat=rad(c-a), dLon=rad(d-b);
+  const h=Math.sin(dLat/2)**2 + Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+}
+
+function formatDistance(km) {
+  return km<1 ? Math.round(km*1000)+" m" : km.toFixed(1)+" km";
+}
+
+function formatDuration(seconds) {
+  const min=Math.round(seconds/60);
+  if(min<60) return min+" min";
+  const h=Math.floor(min/60);
+  const m=min%60;
+  return h+" h "+String(m).padStart(2,"0");
+}
+</script>
+</body>
+</html>
